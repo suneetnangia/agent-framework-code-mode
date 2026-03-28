@@ -1,0 +1,48 @@
+[project]
+name = "progressive-exposure"
+version = "0.1.0"
+description = "Project to implement progressive exposure techniques for LLMs."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [    
+    "agent-framework >= 1.0.0rc5",
+    "python-dotenv",    
+    "azure-identity",
+    "fastapi",
+    "uvicorn[standard]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pyright",
+    "ruff",
+    "poethepoet",
+    "agent-framework-devui >= 1.0.0b260225"
+]
+
+[project.scripts]
+progressive-exposure = "progressive_exposure:cli"
+financial-apis = "progressive_exposure.financial_apis.app:main"
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.uv]
+prerelease = "allow"
+
+[build-system]
+requires = ["uv_build>=0.10.7,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.poe.tasks]
+test = "pytest tests/ -v"
+lint = "ruff check src/ tests/"
+format = "ruff format src/ tests/"
+format-check = "ruff format --check src/ tests/"
+typecheck = "pyright src/"
+check = ["lint", "format-check", "typecheck", "test"]

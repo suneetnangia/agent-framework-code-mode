@@ -1,2 +1,153 @@
-# progressive-exposure-with-maf
-Explores use of Skills and scripts with Microsoft Agent Framework.
+# Advance Progressive Exposure with MAF
+
+Demonstrates progressive exposure techniques for LLMs by combining Skills with dynamic code generation, built on the [Microsoft Agent Framework](https://github.com/microsoft/agent-framework).
+
+An orchestrator agent delegates tasks to skills: fetching web pages, running dynamically generated Python code, and performing portfolio risk analysis by chaining multiple Financial Data APIs.
+
+The project includes **mock Financial Data APIs** and two **risk analysis skills** (composed and decomposed) that demonstrate how an LLM agent can chain API calls with different execution strategies.
+
+## Why Dynamic Code Generation?
+
+> See [Why Dynamic Code Generation?](docs/why-dynamic-code-generation.md)
+
+## Why a Secure Sandbox is Non-Negotiable
+
+> See [Why a Secure Sandbox is Non-Negotiable](docs/why-secure-sandbox.md)
+
+## Getting Started
+
+This project includes a [Dev Container](https://containers.dev/) configuration that provides all required tooling (Python 3.13, uv, Azure CLI, Ruff) out of the box.
+
+1. Open the repository in VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed.
+2. When prompted, select **Reopen in Container** (or run **Dev Containers: Reopen in Container** from the Command Palette).
+3. Dependencies are installed automatically when the container is created.
+
+## Setup
+
+### Configure environment variables
+
+Copy the example file and fill in your Azure OpenAI details:
+
+```bash
+cp src/progressive_exposure/agents/.env.example src/progressive_exposure/agents/.env
+```
+
+Edit `src/progressive_exposure/agents/.env`:
+
+```env
+AZURE_OPENAI_ENDPOINT=https://<your-resource>.cognitiveservices.azure.com
+AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment-name>
+```
+
+### Authenticate with Azure
+
+Sign in to Azure before running the solution, the agent uses `DefaultAzureCredential` which relies on an active Azure CLI session:
+
+```bash
+az login
+```
+
+## Running
+
+All commands below use `uv run`, which automatically manages the virtual environment with no need to activate it manually.
+
+### CLI
+
+```bash
+uv run progressive-exposure
+```
+
+This starts an interactive loop where you can type messages to the orchestrator agent. Type `exit` or `quit` to stop.
+
+### DevUI
+
+Launch the Agent Framework DevUI for a browser-based interface:
+
+```bash
+uv run devui src/progressive_exposure/agents --port 8080
+```
+
+Then open `http://localhost:8080` in your browser.
+
+### Debugging in VS Code
+
+Launch configurations are provided in `.vscode/launch.json`:
+
+- **Debug DevUI**: starts the DevUI server on port 8080
+- **Debug CLI**: runs the interactive CLI
+- **Stock Quotes API (:8001)**: runs the stock quotes API standalone
+- **Portfolio Holdings API (:8002)**: runs the portfolio holdings API standalone
+- **Market Indices API (:8003)**: runs the market indices API standalone
+- **All Financial APIs (:8000)**: runs all 3 APIs on a single server
+
+A compound configuration **All APIs + Dev UI** launches all 3 individual APIs plus the DevUI simultaneously.
+
+Press **F5** and select a configuration to start debugging.
+
+## Financial Data APIs
+
+Three mock FastAPI services providing financial data, useful for demonstrating API chaining with the agent.
+
+### Running
+
+Start all APIs on a single server:
+
+```bash
+uv run uvicorn progressive_exposure.financial_apis.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Or run each API individually:
+
+```bash
+uv run uvicorn progressive_exposure.financial_apis.stocks_app:app --host 0.0.0.0 --port 8001 --reload
+uv run uvicorn progressive_exposure.financial_apis.portfolio_app:app --host 0.0.0.0 --port 8002 --reload
+uv run uvicorn progressive_exposure.financial_apis.indices_app:app --host 0.0.0.0 --port 8003 --reload
+```
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/stocks` | All stock quotes (10 tickers) |
+| GET | `/api/v1/stocks/{ticker}` | Single stock quote (e.g., AAPL, MSFT, NVDA) |
+| GET | `/api/v1/portfolio` | Portfolio holdings with summary (total value, P&L) |
+| GET | `/api/v1/indices` | Market indices (S&P 500, NASDAQ, Dow Jones) |
+| GET | `/api/v1/indices/{symbol}` | Single index (SPX, IXIC, DJI) |
+
+Swagger UI is available at `http://localhost:8000/docs`.
+
+## Skills
+
+### read-web-page
+
+Fetches and extracts readable content from a web page given a URL.
+
+### risk-analysis-composed
+
+Performs portfolio risk analysis by generating Python code that **chains all 3 Financial Data APIs in a single execution**. The agent writes code that calls indices, portfolio, and stock endpoints together, computes risk metrics, and runs it via the `run-python-code` skill.
+
+### risk-analysis-decomposed
+
+Performs the same risk analysis but **calls each API separately** in individual `run-python-code` invocations. The agent examines each response before deciding the next call, enabling step-by-step reasoning over intermediate results.
+
+### Persona & Example Prompts
+
+Both risk analysis skills implement **[Persona 3: Emily, 30, Risk Analyst at a hedge fund](src/progressive_exposure/financial_apis/PERSONAS.md#persona-3-risk-analyst)**. Example prompts:
+
+- *"If the NASDAQ drops 2% today, which of our holdings are most exposed?"*
+- *"What's our total unrealized P&L and how does each position's daily move compare to its benchmark index?"*
+
+See [`PERSONAS.md`](src/progressive_exposure/financial_apis/PERSONAS.md) for all 3 finance personas and their API chaining scenarios.
+
+## Development
+
+All tasks use [poethepoet](https://poethepoet.naber.me/) and can be run with `poe`:
+
+```bash
+poe lint            # Lint with ruff
+poe format          # Format with ruff
+poe format-check    # Check formatting
+poe typecheck       # Type check with pyright
+poe test            # Run tests with pytest
+poe check           # Run all of the above
+```
