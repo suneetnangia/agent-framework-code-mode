@@ -148,10 +148,12 @@ def api_get(path):
 ### JavaScript (when using `run-javascript-code-remote`)
 
 - All code MUST be QuickJS-compliant — see the `run-javascript-code-remote` skill for full guidelines and available plugins
-- Use the `fetch` plugin for HTTP requests (`import * as fetch from 'fetch'`)
+- **There is no global `fetch()` function.** You MUST import the fetch plugin and use `fetch.fetch(url)`
 - Use `console.log()` for output
 
 #### Helper pattern for API calls
+
+**You MUST include this import and use `fetch.fetch()` — bare `fetch()` does not exist in QuickJS:**
 
 ```javascript
 import * as fetch from 'fetch';

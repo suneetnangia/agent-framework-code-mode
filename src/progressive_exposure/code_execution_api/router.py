@@ -25,6 +25,7 @@ def execute_code(request: CodeExecutionRequest) -> CodeExecutionResponse:
         )
 
     logger.info("--- Received JavaScript code ---\n%s\n--- End of code ---", code)
+    print(f"--- Received JavaScript code ---\n{code}\n--- End of code ---", flush=True)
 
     output, exit_code, timed_out = js_script_runner(code)
 

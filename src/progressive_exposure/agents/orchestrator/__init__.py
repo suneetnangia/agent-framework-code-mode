@@ -84,6 +84,19 @@ Use this skill when the user needs to:
 Run the `execute` script with the `code` parameter containing the JavaScript source code.
 The code is sent to a remote execution service running QuickJS.
 
+## CRITICAL — HTTP Requests
+QuickJS has NO built-in HTTP capability. There is no global `fetch()`, no `XMLHttpRequest`, no `http` module.
+
+To make HTTP requests, you MUST use the `fetch` plugin:
+```javascript
+import * as fetch from 'fetch';
+const body = fetch.fetch('http://example.com/api/data');  // returns string
+const data = JSON.parse(body);
+```
+
+**NEVER use bare `fetch(url)`.** It does not exist. You MUST write `import * as fetch from 'fetch'` at the
+top of the code and call `fetch.fetch(url)`.
+
 ## Code Guidelines — QuickJS Compliance
 All generated code MUST be QuickJS-compliant. QuickJS supports ES2023 syntax but is NOT Node.js.
 
@@ -98,9 +111,10 @@ All generated code MUST be QuickJS-compliant. QuickJS supports ES2023 syntax but
 - Plugins provided by the remote API via `import * as <name> from '<name>'` (see Plugins section below)
 
 ### NOT Supported (do NOT use)
+- **`fetch(url)` — does NOT exist.** Use `fetch.fetch(url)` after importing the fetch plugin
 - `require()` — use `import * as <name> from '<name>'` for plugins only
 - Node.js built-in modules (`fs`, `path`, `http`, `https`, `crypto`, `url`, `child_process`, etc.)
-- Browser `fetch()`, `XMLHttpRequest`, or any other network APIs
+- `XMLHttpRequest` or any other network APIs
 - Browser APIs (`document`, `window`, `alert`, `setTimeout`, `setInterval`, etc.)
 - `Buffer`, `process`, `__dirname`, `__filename`
 - npm packages of any kind
