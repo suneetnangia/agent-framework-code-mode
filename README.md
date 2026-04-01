@@ -118,7 +118,7 @@ Swagger UI is available at `http://localhost:8000/docs`.
 
 ## Code Execution API
 
-A PoC FastAPI service that accepts JavaScript code and executes it in an isolated Node.js subprocess. This serves as a stand-in for a remote code execution service.
+A PoC FastAPI stub that accepts JavaScript code, logs it to the console, and returns a fixed response. This serves as a stand-in for a real remote code execution service (e.g., a QuickJS sandbox).
 
 ### Running
 
@@ -148,7 +148,7 @@ uv run code-execution-api
 **Response:**
 ```json
 {
-  "output": "hello",
+  "output": "Code received and logged successfully.",
   "exit_code": 0,
   "timed_out": false
 }
@@ -192,7 +192,9 @@ Plugin documentation lives in `src/progressive_exposure/agents/orchestrator/plug
 
 | Plugin | Import | Description |
 |--------|--------|-------------|
-| `fetch` | `import * as fetch from 'fetch'` | Synchronous HTTP GET via `fetch.fetch(url)` |
+| `indices` | `import * as indices from 'indices'` | Market index data via `indices.get()` / `indices.get(symbol)` |
+| `stocks` | `import * as stocks from 'stocks'` | Stock quote data via `stocks.get()` / `stocks.get(ticker)` |
+| `portfolios` | `import * as portfolios from 'portfolios'` | Portfolio holdings via `portfolios.get()` |
 
 #### Adding a new plugin
 

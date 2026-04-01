@@ -148,21 +148,27 @@ def api_get(path):
 ### JavaScript (when using `run-javascript-code-remote`)
 
 - All code MUST be QuickJS-compliant — see the `run-javascript-code-remote` skill for full guidelines and available plugins
-- **There is no global `fetch()` function.** You MUST import the fetch plugin and use `fetch.fetch(url)`
+- **There is no `fetch()`, no HTTP, no URLs.** Use the `indices`, `stocks`, and `portfolios` plugins to access data
 - Use `console.log()` for output
 
-#### Helper pattern for API calls
+#### Data access pattern
 
-**You MUST include this import and use `fetch.fetch()` — bare `fetch()` does not exist in QuickJS:**
+**You MUST use plugins to access data — there is no HTTP or URL-based API access in QuickJS:**
 
 ```javascript
-import * as fetch from 'fetch';
+import * as indices from 'indices';
+import * as stocks from 'stocks';
+import * as portfolios from 'portfolios';
 
-const BASE_URL = "http://localhost:8000";
+const allIndicesRaw = indices.get();                  // string | null
+const nasdaqRaw = indices.get("IXIC");                // string | null
+const allStocksRaw = stocks.get();                    // string | null
+const appleRaw = stocks.get("AAPL");                  // string | null
+const portfolioRaw = portfolios.get();                // string | null
 
-function apiGet(path) {
-  const body = fetch.fetch(BASE_URL + path);
-  return JSON.parse(body);
+// Always check for null before parsing
+if (allIndicesRaw !== null) {
+  const allIndices = JSON.parse(allIndicesRaw);
 }
 ```
 

@@ -5,7 +5,7 @@ from .router import router
 
 app = FastAPI(
     title="Code Execution API",
-    description="PoC API for remote JavaScript code execution via Node.js.",
+    description="PoC stub API that logs received JavaScript code and returns a fixed response.",
     version="1.0.0",
 )
 

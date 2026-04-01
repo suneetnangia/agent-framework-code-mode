@@ -160,19 +160,39 @@ After collecting all data from previous steps, write a final `run-python-code` i
 ### JavaScript (when using `run-javascript-code-remote`)
 
 - All code MUST be QuickJS-compliant — see the `run-javascript-code-remote` skill for full guidelines and available plugins
-- **There is no global `fetch()` function.** You MUST import the fetch plugin and use `fetch.fetch(url)`
+- **There is no `fetch()`, no HTTP, no URLs.** Use the `indices`, `stocks`, and `portfolios` plugins to access data
 - Use `console.log()` for output
 
-#### Template for each API call
+#### Template for each data access step
 
-**You MUST include this import and use `fetch.fetch()` — bare `fetch()` does not exist in QuickJS:**
+**You MUST use plugins to access data — there is no HTTP or URL-based API access in QuickJS:**
 
 ```javascript
-import * as fetch from 'fetch';
+import * as indices from 'indices';
+const raw = indices.get();
+if (raw !== null) {
+  const data = JSON.parse(raw);
+  console.log(JSON.stringify(data, null, 2));
+}
+```
 
-const body = fetch.fetch("http://localhost:8000/api/v1/<endpoint>");
-const data = JSON.parse(body);
-console.log(JSON.stringify(data, null, 2));
+Other plugins follow the same pattern:
+```javascript
+import * as stocks from 'stocks';
+const raw = stocks.get("AAPL");
+if (raw !== null) {
+  const stock = JSON.parse(raw);
+  console.log(JSON.stringify(stock, null, 2));
+}
+```
+
+```javascript
+import * as portfolios from 'portfolios';
+const raw = portfolios.get();
+if (raw !== null) {
+  const portfolio = JSON.parse(raw);
+  console.log(JSON.stringify(portfolio, null, 2));
+}
 ```
 
 #### Template for final computation step

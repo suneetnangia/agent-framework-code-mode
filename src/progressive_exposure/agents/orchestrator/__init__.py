@@ -84,18 +84,30 @@ Use this skill when the user needs to:
 Run the `execute` script with the `code` parameter containing the JavaScript source code.
 The code is sent to a remote execution service running QuickJS.
 
-## CRITICAL — HTTP Requests
+## CRITICAL — Data Access
 QuickJS has NO built-in HTTP capability. There is no global `fetch()`, no `XMLHttpRequest`, no `http` module.
 
-To make HTTP requests, you MUST use the `fetch` plugin:
+To access financial data, you MUST use the provided plugins:
 ```javascript
-import * as fetch from 'fetch';
-const body = fetch.fetch('http://example.com/api/data');  // returns string
-const data = JSON.parse(body);
+import * as indices from 'indices';
+import * as stocks from 'stocks';
+import * as portfolios from 'portfolios';
+
+const allIndicesRaw = indices.get();                  // all indices (string | null)
+const nasdaqRaw = indices.get("IXIC");                // single index (string | null)
+const allStocksRaw = stocks.get();                    // all stocks (string | null)
+const appleRaw = stocks.get("AAPL");                  // single stock (string | null)
+const portfolioRaw = portfolios.get();                // all holdings (string | null)
+
+// Always check for null before parsing
+if (allIndicesRaw !== null) {{
+  const allIndices = JSON.parse(allIndicesRaw);
+}}
 ```
 
-**NEVER use bare `fetch(url)`.** It does not exist. You MUST write `import * as fetch from 'fetch'` at the
-top of the code and call `fetch.fetch(url)`.
+**NEVER use `fetch()`, `http`, or any URL-based API call.** They do not exist.
+You MUST use the plugin imports above to retrieve data.
+All plugin `.get()` methods return `null` when no results are found — always check before calling `JSON.parse()`.
 
 ## Code Guidelines — QuickJS Compliance
 All generated code MUST be QuickJS-compliant. QuickJS supports ES2023 syntax but is NOT Node.js.
@@ -111,10 +123,11 @@ All generated code MUST be QuickJS-compliant. QuickJS supports ES2023 syntax but
 - Plugins provided by the remote API via `import * as <name> from '<name>'` (see Plugins section below)
 
 ### NOT Supported (do NOT use)
-- **`fetch(url)` — does NOT exist.** Use `fetch.fetch(url)` after importing the fetch plugin
+- **`fetch()` — does NOT exist.** Use the `indices`, `stocks`, and `portfolios` plugins instead
 - `require()` — use `import * as <name> from '<name>'` for plugins only
 - Node.js built-in modules (`fs`, `path`, `http`, `https`, `crypto`, `url`, `child_process`, etc.)
 - `XMLHttpRequest` or any other network APIs
+- URL-based API calls of any kind — use plugins
 - Browser APIs (`document`, `window`, `alert`, `setTimeout`, `setInterval`, etc.)
 - `Buffer`, `process`, `__dirname`, `__filename`
 - npm packages of any kind

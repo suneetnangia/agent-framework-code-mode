@@ -1,24 +1,25 @@
 from fastapi.testclient import TestClient
 
 from progressive_exposure.code_execution_api.app import app
-from progressive_exposure.code_execution_api.js_script_runner import MAX_CODE_SIZE
+from progressive_exposure.code_execution_api.router import MAX_CODE_SIZE
 
 client = TestClient(app)
 
 
 class TestCodeExecutionAPI:
-    def test_simple_console_log(self) -> None:
+    def test_valid_code_returns_stub_response(self) -> None:
         resp = client.post("/execute", json={"code": 'console.log("hello")'})
         assert resp.status_code == 200
         body = resp.json()
-        assert body["output"] == "hello"
+        assert body["output"] == "Code received and logged successfully."
         assert body["exit_code"] == 0
         assert body["timed_out"] is False
 
-    def test_computation(self) -> None:
-        resp = client.post("/execute", json={"code": "console.log(2 + 2)"})
+    def test_multiline_code_accepted(self) -> None:
+        code = "const x = 1;\nconst y = 2;\nconsole.log(x + y);"
+        resp = client.post("/execute", json={"code": code})
         assert resp.status_code == 200
-        assert resp.json()["output"] == "4"
+        assert resp.json()["exit_code"] == 0
 
     def test_empty_code_returns_400(self) -> None:
         resp = client.post("/execute", json={"code": ""})
@@ -36,28 +37,6 @@ class TestCodeExecutionAPI:
         assert resp.status_code == 400
         assert "exceeds maximum size" in resp.json()["detail"]
 
-    def test_runtime_error(self) -> None:
-        resp = client.post(
-            "/execute", json={"code": 'throw new Error("boom");'}
-        )
-        assert resp.status_code == 200
-        body = resp.json()
-        assert "boom" in body["output"]
-        assert body["exit_code"] != 0
-        assert body["timed_out"] is False
-
-    def test_syntax_error(self) -> None:
-        resp = client.post("/execute", json={"code": "function foo("})
-        assert resp.status_code == 200
-        body = resp.json()
-        assert body["exit_code"] != 0
-
     def test_missing_code_field(self) -> None:
         resp = client.post("/execute", json={})
         assert resp.status_code == 422  # Pydantic validation error
-
-    def test_arrow_function_and_template_literal(self) -> None:
-        code = 'const greet = (n) => `Hello, ${n}!`;\nconsole.log(greet("JS"));'
-        resp = client.post("/execute", json={"code": code})
-        assert resp.status_code == 200
-        assert resp.json()["output"] == "Hello, JS!"
