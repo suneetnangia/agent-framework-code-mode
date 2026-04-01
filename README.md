@@ -37,7 +37,10 @@ Edit `src/progressive_exposure/agents/.env`:
 ```env
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.cognitiveservices.azure.com
 AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment-name>
+REMOTE_CODE_EXECUTION_URL=http://localhost:8100
 ```
+
+`REMOTE_CODE_EXECUTION_URL` defaults to `http://localhost:8100` and only needs to be changed when pointing at a remote execution service.
 
 ### Authenticate with Azure
 
