@@ -41,7 +41,10 @@ def remote_script_runner(code: str) -> str:
     try:
         with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
             body = json.loads(resp.read().decode("utf-8"))
-            return body.get("output", "(no output)")
+            result = body.get("result", body.get("output"))
+            if result is None:
+                return "(no output)"
+            return result if isinstance(result, str) else json.dumps(result)
     except urllib.error.HTTPError as e:
         try:
             detail = json.loads(e.read().decode("utf-8")).get("detail", e.reason)
