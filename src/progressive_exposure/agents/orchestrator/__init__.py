@@ -153,7 +153,7 @@ run_js_remote_skill = agent_framework.Skill(
     description=(
         "Sends dynamically generated JavaScript code to a remote execution service and returns the output. "
         "Use this skill when the user asks to perform tasks using JavaScript, such as data transformations, "
-        "string manipulation, algorithmic problem-solving, JSON processing, or any task that benefits from "
+        "string manipulation, algorithmic problem-solving, JSON processing, access financial data, or any task that benefits from "
         "precise programmatic computation using JavaScript rather than Python. "
         "The code runs in a remote QuickJS environment. All generated code must be QuickJS-compliant."
     ),
